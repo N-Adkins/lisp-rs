@@ -1,4 +1,6 @@
 mod token;
+mod symbol;
+mod ast;
 mod lexer;
 mod parser;
 
@@ -14,5 +16,7 @@ fn main() {
 
     let mut parser = Parser::new(lexer.get_tokens());
     parser.parse();
+
+    println!("{}", parser.get_list().eval_list());
 
 }

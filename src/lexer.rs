@@ -1,5 +1,7 @@
 #![allow(dead_code, unused_variables)]
 
+use std::num::ParseIntError;
+
 use crate::token::Keyword;
 use crate::token::Token;
 
@@ -30,7 +32,11 @@ impl Lexer {
         while self.current_position < self.input.len() - 1 {
             
             self.next_char();
-            
+
+            if self.current_char.is_whitespace() {
+                continue;
+            }
+
             if self.current_char == '(' {
                 self.current_depth += 1;
                 self.tokens.push(Token::ListBegin(self.current_depth));
@@ -48,7 +54,7 @@ impl Lexer {
             
             let mut slice = String::new();
             while !self.current_char.is_whitespace() {
-
+                
                 slice.push(self.current_char);
 
                 match self.peek_next_char() {
@@ -59,8 +65,9 @@ impl Lexer {
                 self.next_char();
 
             }
-            
-            match slice.parse() {
+
+            let int_val: Result<i32, ParseIntError> = slice.parse();
+            match int_val {
                 Ok(v) => { self.tokens.push(Token::Int(v)); continue; }
                 Err(_) => {}
             };
@@ -69,13 +76,14 @@ impl Lexer {
                 self.tokens.push(Token::Symbol(slice.chars().nth(0).unwrap()));
                 continue;
             }
-
+            
+            /*
             if slice.chars().nth(0).unwrap() == '\"' && slice.chars().nth(slice.len() - 1).unwrap() == '\"' {
                 slice.remove(0);
                 slice.remove(slice.len() - 1);
                 self.tokens.push(Token::String(slice));
                 continue;
-            }
+            }*/
 
             // is symbol
             let keyword = match &*slice.to_lowercase() {
@@ -103,7 +111,7 @@ impl Lexer {
 
         self.current_char = match self.input.chars().nth(self.current_position) {
             Some(v) => v,
-            None => panic!("Unexpected character at position {}", self.current_position),
+            None => panic!("Expected character at position {}", self.current_position),
         };
 
         self.current_position += 1;
@@ -113,7 +121,7 @@ impl Lexer {
     fn peek_next_char(&self) -> char {
         match self.input.chars().nth(self.current_position) {
             Some(v) => v,
-            None => panic!("Unexpected character at position {}", self.current_position),
+            None => panic!("Expected character at position {}", self.current_position),
         }
     }
 
