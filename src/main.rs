@@ -7,7 +7,6 @@ use reader::Reader;
 
 use rustyline::error::ReadlineError;
 use rustyline::DefaultEditor;
-
 use colored::Colorize;
 
 fn main() {

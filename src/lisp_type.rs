@@ -70,7 +70,8 @@ impl LispType {
                 print!(")");
             },
             LispType::Int(i) => print!("{}", i),
-            LispType::Symbol(s) | LispType::String(s) => print!("{}", s),
+            LispType::Symbol(s) => print!("{}", s),
+            LispType::String(s) => print!("\"{}\"", s),
             LispType::Bool(b) => match *b {
                 true => print!("true"),
                 false => print!("false"),

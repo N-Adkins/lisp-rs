@@ -69,7 +69,7 @@ impl Reader {
 
     fn read_list(&mut self) -> LispResult<LispType> {
 
-        self.next().unwrap(); // Should be left paren
+        self.next()?; // Should be left paren
         
         let mut list: Vec<LispType> = Vec::new();
 
@@ -87,7 +87,7 @@ impl Reader {
 
         };
 
-        self.next().unwrap(); // Should be right paren
+        self.next()?; // Should be right paren
 
         Ok(LispType::List(list))
         
@@ -107,7 +107,9 @@ impl Reader {
         }
         
         // Unwrapping last char should be safe as it uses current length to get it
-        if first_char == '"' && token.chars().nth(token.len() - 1).unwrap() == '"' {
+        // Does >= 2 to confirm that it isn't just a single quote being read so it can
+        // be passed to symbol processing if it's just one
+        if first_char == '"' && token.chars().last().unwrap() == '"' && token.len() >= 2 {
             let mut str = token.clone();
             str.remove(0);
             str.remove(str.len() - 1);
