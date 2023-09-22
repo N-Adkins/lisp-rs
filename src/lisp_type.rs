@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use crate::symbol::Symbol;
 use crate::result::LispResult;
 
@@ -54,8 +56,6 @@ impl LispType {
 
     }
 
-
-
     pub fn print(&self) {
         match self {
             LispType::List(vec) => {
@@ -78,7 +78,7 @@ impl LispType {
             LispType::Nil => print!("nil"),
         }   
     }
-
+    
     pub fn println(&self) {
         self.print();
         println!();

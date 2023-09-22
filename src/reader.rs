@@ -98,7 +98,7 @@ impl Reader {
         let token = self.next()?;
 
         let first_char = token.chars().nth(0).unwrap();
-        if first_char.is_numeric() {
+        if first_char.is_numeric() || first_char == '-' {
             let num_result: Result<i32, ParseIntError> = token.parse();
             match num_result {
                 Ok(i) => return Ok(LispType::Int(i)),
