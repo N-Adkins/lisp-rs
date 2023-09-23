@@ -1,6 +1,7 @@
 mod result;
 mod symbol;
 mod lisp_type;
+mod env;
 mod reader;
 
 use reader::Reader; 
