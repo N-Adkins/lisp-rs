@@ -1,10 +1,12 @@
 #![allow(dead_code)]
 
-use crate::symbol::Symbol;
+use crate::env::Env;
 use crate::result::LispResult;
+use crate::func::LispFunc;
 
 #[derive(Clone)]
 pub enum LispType {
+    Func(LispFunc),
     List(Vec<LispType>),
     Int(i32),
     Symbol(String),
@@ -15,46 +17,101 @@ pub enum LispType {
 
 impl LispType {
 
-    pub fn evaluate(&self) -> LispResult<i32> {
+    pub fn evaluate(&self, env: &mut Env) -> LispResult<LispType> {
 
         match self {
 
             LispType::List(vec) => {
 
                 if vec.is_empty() {
-                    return Ok(0);
+                    return Ok(LispType::Int(0));
                 }
 
-                let mut eval_vec = vec.clone();
-                
-                let func_result: LispResult<fn(i32, i32) -> i32> = match eval_vec.remove(0) {
-                    LispType::Symbol(symbol) => match symbol.get_symbol_func() {
-                        Some(func) => Ok(func),
-                        None => return Err(format!("Attempted to evaluate unhandled symbol \"{}\"", symbol)),
-                    },
-                    _ => Err(String::from("Expected symbol at the start of list to evaluate")),
-                };
+                let eval_vec = vec.clone();
 
-                let eval_func = func_result?;
-                
-                if eval_vec.len() != 2 {
-                    return Err(String::from("Expected 2 arguments for symbol evaluation"));
+                match eval_vec.first().unwrap() {
+
+                    LispType::Symbol(symbol) => match symbol.as_str() {
+
+                        "def!" => {
+
+                            if vec.len() > 3 {
+                                return Err(String::from("Expected two arguments to \"def!\" declaration"));
+                            }
+
+                            if let LispType::Symbol(to_def) = eval_vec.iter().nth(1).unwrap() {
+                                let value = eval_vec.iter().nth(2).unwrap().evaluate(env)?;
+                                env.set(to_def.as_str(), value.clone());
+                                return Ok(value);
+                            } else {
+                                return Err(String::from("Failed to evaluate \"def!\" declaration"));
+                            }
+                            
+                        }
+
+                        "let*" => {
+
+                            Err(String::from(""))
+
+                        }
+
+                        _ => {
+                            
+                            let value = env.get(symbol.as_str())?;
+
+                            match value {
+                                LispType::Func(func) => {
+                                    return func.call(&eval_vec[1..], env);
+                                }
+                                _ => return Ok(value),
+                            }
+
+                        }
+                    }
+                    _ => Err(String::from("Expected symbol at the start of list to be evaluated")),
                 }
-
-                let a = eval_vec.remove(0).evaluate()?;
-                let b = eval_vec.remove(0).evaluate()?;
-
-                return Ok(eval_func(a, b));
-
+                
             }
 
-            LispType::Int(i) => return Ok(*i),
+            LispType::Symbol(s) => return env.get(s.as_str()),
 
-            _ => Err(String::from("Expected integer when evaluating")),
+            LispType::Int(i) => return Ok(LispType::Int(*i)),
+
+            _ => Err(String::from("Unhandled evaluation value")),
 
         }
 
     }
+
+    /* fn evaluate_operator_list(&self, eval_vec: &mut Vec<LispType>) -> LispResult<LispType> {
+
+        let func_result: LispResult<fn(i32, i32) -> i32> = match eval_vec.remove(0) {
+            LispType::Symbol(symbol) => match symbol.get_symbol_func() {
+                Some(func) => Ok(func),
+                None => return Err(format!("Attempted to evaluate unhandled symbol \"{}\"", symbol)),
+            },
+            _ => Err(String::from("Expected symbol at the start of list to evaluate")),
+        };
+
+        let eval_func = func_result?;
+        
+        if eval_vec.len() != 2 {
+            return Err(String::from("Expected 2 arguments for symbol evaluation"));
+        }
+
+        let a = match eval_vec.remove(0).evaluate()? {
+            LispType::Int(i) => i,
+            val @ _ => return Err(String::from("Expected integer when evaluating argument for operator"))
+        };
+
+        let b = match eval_vec.remove(0).evaluate()? {
+            LispType::Int(i) => i,
+            val @ _ => return Err(String::from("Expected integer when evaluating argument for operator"))
+        };
+
+        return Ok(LispType::Int(eval_func(a, b)));
+
+    } */
 
     pub fn print(&self) {
         match self {
@@ -77,6 +134,7 @@ impl LispType {
                 false => print!("false"),
             }
             LispType::Nil => print!("nil"),
+            LispType::Func(_) => {},
         }   
     }
     

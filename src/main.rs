@@ -1,18 +1,23 @@
 mod result;
-mod symbol;
+mod operator;
+mod func;
 mod lisp_type;
 mod env;
 mod reader;
 
 use reader::Reader; 
+use env::Env;
 
 use rustyline::error::ReadlineError;
 use rustyline::DefaultEditor;
 use colored::Colorize;
 
 fn main() {
-    
+
     let mut rl = DefaultEditor::new().expect("Failed to load input / output");
+
+    let mut global_env = Env::new(None);
+    operator::init_symbol_funcs(&mut global_env);
 
     loop {
 
@@ -43,13 +48,14 @@ fn main() {
         
         print!("{} ", "Parsed form:".green().bold());
         form.println();
-        
-        let eval = match form.evaluate() {
+
+        let eval = match form.evaluate(&mut global_env) {
             Ok(v) => v,
             Err(msg) => { println!("{} {}", "Evaluation error:".red().bold(), msg.as_str().red()); continue },
         };
 
-        println!("{} {}", "Evaluation:".green().bold(), eval);
+        print!("{} ", "Evaluation:".green().bold());
+        eval.println();
 
     }
 }
