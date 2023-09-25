@@ -109,7 +109,7 @@ impl Reader {
         // Unwrapping last char should be safe as it uses current length to get it
         // Does >= 2 to confirm that it isn't just a single quote being read so it can
         // be passed to symbol processing if it's just one
-        if first_char == '"' && token.chars().last().unwrap() == '"' && token.len() >= 2 {
+        if first_char == '"' && token.ends_with('"') && token.len() >= 2 {
             let mut str = token.clone();
             str.remove(0);
             str.remove(str.len() - 1);

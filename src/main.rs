@@ -1,9 +1,14 @@
+#![allow(clippy::needless_return)] 
+
 mod result;
 mod operator;
 mod func;
 mod lisp_type;
 mod env;
 mod reader;
+
+use std::cell::RefCell;
+use std::rc::Rc;
 
 use reader::Reader; 
 use env::Env;
@@ -16,8 +21,8 @@ fn main() {
 
     let mut rl = DefaultEditor::new().expect("Failed to load input / output");
 
-    let mut global_env = Env::new(None);
-    operator::init_symbol_funcs(&mut global_env);
+    let global_env = Rc::new(RefCell::new(Env::new(None)));
+    operator::init_operator_funcs(Rc::clone(&global_env));
 
     loop {
 
@@ -49,7 +54,7 @@ fn main() {
         print!("{} ", "Parsed form:".green().bold());
         form.println();
 
-        let eval = match form.evaluate(&mut global_env) {
+        let eval = match form.evaluate(Rc::clone(&global_env)) {
             Ok(v) => v,
             Err(msg) => { println!("{} {}", "Evaluation error:".red().bold(), msg.as_str().red()); continue },
         };

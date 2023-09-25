@@ -1,21 +1,20 @@
 #![allow(dead_code)]
 
-use std::collections::HashMap;
+use std::{collections::HashMap, rc::Rc, cell::RefCell};
 
 use crate::{lisp_type::LispType, result::LispResult};
 
-pub struct Env<'a> {
-    parent: Option<&'a Env<'a>>,
-    children: Vec<Env<'a>>,
+#[derive(Clone)]
+pub struct Env {
+    parent: Option<Rc<RefCell<Env>>>,
     data: HashMap<String, LispType>,
 }
 
-impl<'a> Env<'a> {
+impl Env {
     
-    pub fn new(parent: Option<&'a Env<'a>>) -> Self {
+   pub fn new(parent: Option<Rc<RefCell<Env>>>) -> Self {
         Self {
             parent,
-            children: Vec::new(),
             data: HashMap::new(),
         }
     }
@@ -28,8 +27,8 @@ impl<'a> Env<'a> {
         if let Some(value) = self.data.get(&String::from(key)) {
             Some(value.clone())
         } else {
-            if let Some(parent) = self.parent {
-                parent.find(key)
+            if let Some(parent) = &self.parent {
+                parent.borrow().find(key)
             } else {
                 None
             }
