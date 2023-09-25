@@ -164,6 +164,17 @@ impl LispType {
 
                         }
 
+                        "type?" => {
+
+                            if eval_vec.len() != 3 {
+                                return Err(String::from("Expected 2 arguments to \"type?\" declaration"));
+                            }
+                             
+                            return Ok(LispType::Bool(std::mem::discriminant(&eval_vec.get(1).unwrap().evaluate(Rc::clone(&env))?) == 
+                                std::mem::discriminant(&eval_vec.get(2).unwrap().evaluate(Rc::clone(&env))?)));
+
+                        }
+
                         "count" => {
                             
                             if eval_vec.len() != 2 {

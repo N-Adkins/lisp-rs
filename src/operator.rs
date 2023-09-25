@@ -11,6 +11,7 @@ pub fn init_operator_funcs(env: Rc<RefCell<Env>>) {
     env.borrow_mut().set("-", LispType::Func(LispFunc::new_operator(sub_symbol, Rc::clone(&env))));
     env.borrow_mut().set("*", LispType::Func(LispFunc::new_operator(mul_symbol, Rc::clone(&env))));
     env.borrow_mut().set("/", LispType::Func(LispFunc::new_operator(div_symbol, Rc::clone(&env))));
+    env.borrow_mut().set("=", LispType::Func(LispFunc::new_operator(eq_symbol, Rc::clone(&env))));
 }
 
 fn add_symbol(a_in: LispType, b_in: LispType) -> LispResult<LispType> {
@@ -32,7 +33,7 @@ fn add_symbol(a_in: LispType, b_in: LispType) -> LispResult<LispType> {
 }
 
 
-fn sub_symbol<'a>(a_in: LispType, b_in: LispType) -> LispResult<LispType> {
+fn sub_symbol(a_in: LispType, b_in: LispType) -> LispResult<LispType> {
 
     let a = if let LispType::Int(i) = a_in {
         i
@@ -51,7 +52,7 @@ fn sub_symbol<'a>(a_in: LispType, b_in: LispType) -> LispResult<LispType> {
 }
 
 
-fn mul_symbol<'a>(a_in: LispType, b_in: LispType) -> LispResult<LispType> {
+fn mul_symbol(a_in: LispType, b_in: LispType) -> LispResult<LispType> {
 
     let a = if let LispType::Int(i) = a_in {
         i
@@ -70,7 +71,7 @@ fn mul_symbol<'a>(a_in: LispType, b_in: LispType) -> LispResult<LispType> {
 }
 
 
-fn div_symbol<'a>(a_in: LispType, b_in: LispType) -> LispResult<LispType> {
+fn div_symbol(a_in: LispType, b_in: LispType) -> LispResult<LispType> {
 
     let a = if let LispType::Int(i) = a_in {
         i
@@ -86,4 +87,25 @@ fn div_symbol<'a>(a_in: LispType, b_in: LispType) -> LispResult<LispType> {
 
     return Ok(LispType::Int(a.wrapping_div(b)));
  
+}
+
+fn eq_symbol(a_in: LispType, b_in: LispType) -> LispResult<LispType> {
+
+    if std::mem::discriminant(&a_in) != std::mem::discriminant(&b_in) {
+        return Err(String::from("Attempted to compare two values of different types"));
+    }
+
+    let comp = match (a_in, b_in) {
+        (LispType::Int(a), LispType::Int(b)) => a == b,
+        (LispType::String(a), LispType::String(b)) => a == b,
+        (LispType::Bool(a), LispType::Bool(b)) => a == b,
+        (LispType::Nil, LispType::Nil) => true,
+        (LispType::Symbol(a), LispType::Symbol(b)) => a == b,
+        (LispType::List(_), LispType::List(_)) => return Err(String::from("Can't compare lists")),
+        (LispType::Func(_), LispType::Func(_)) => return Err(String::from("Can't compare functions")),
+        (_, _) => return Err(String::from("Failed to compare both elements in eq statement")),
+    };
+
+    Ok(LispType::Bool(comp))
+
 }
