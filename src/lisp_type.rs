@@ -32,7 +32,7 @@ impl LispType {
 
                 let eval_vec = vec.clone();
 
-                match eval_vec.first().unwrap() {
+                match eval_vec.first().unwrap().evaluate(Rc::clone(&env))? {
 
                     LispType::Symbol(symbol) => match symbol.as_str() {
 
@@ -200,15 +200,25 @@ impl LispType {
                                 }
                                 _ => return Ok(value),
                             }
-
                         }
+
                     }
-                    _ => Err(String::from("Expected symbol at the start of list to be evaluated")),
+
+                    LispType::Func(func) => {
+                        return func.clone().call(&eval_vec[1..], env);
+                    }
+
+                    _ => Err(String::from("Expected symbol or function at the start of list to be evaluated")),
+
                 }
                 
             }
 
-            LispType::Symbol(s) => return env.borrow_mut().get(s.as_str()),
+            LispType::Symbol(s) => return if let Some(found) = env.borrow_mut().find(s.as_str()) {
+                Ok(found)
+            } else {
+                Ok(LispType::Symbol(s.clone()))
+            },
             LispType::String(s) => return Ok(LispType::String(s.clone())),
             LispType::Int(i) => return Ok(LispType::Int(*i)),
 
