@@ -41,15 +41,17 @@ impl LispFunc {
             return func(args.first().unwrap().evaluate(Rc::clone(&env))?, args.last().unwrap().evaluate(Rc::clone(&env))?);
         }
 
+        let mut env_cpy = self.internal_env.borrow().clone();
+
         for i in 0..args.len() {
             if let LispType::Symbol(s) = self.args.get(i).unwrap() {
-                self.internal_env.borrow_mut().set(s.as_str(), args.get(i).unwrap().evaluate(Rc::clone(&env))?);
+                env_cpy.set(s.as_str(), args.get(i).unwrap().evaluate(Rc::clone(&env))?);
             } else {
                 return Err(String::from("Expected symbols as arguments in a function"));
             }
         }
         
-        return self.body.evaluate(Rc::clone(&self.internal_env));
+        return self.body.evaluate(Rc::new(RefCell::new(env_cpy)));
 
     }
 

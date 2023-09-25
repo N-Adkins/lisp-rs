@@ -6,12 +6,18 @@ use crate::lisp_type::LispType;
 use crate::func::LispFunc;
 use crate::result::LispResult;
 
+macro_rules! decl_operator {
+    ( $symbol:expr, $func:expr, $env:expr ) => {
+         $env.borrow_mut().set($symbol, LispType::Func(LispFunc::new_operator($func, Rc::clone(&$env))));
+    }
+}
+
 pub fn init_operator_funcs(env: Rc<RefCell<Env>>) {
-    env.borrow_mut().set("+", LispType::Func(LispFunc::new_operator(add_symbol, Rc::clone(&env))));
-    env.borrow_mut().set("-", LispType::Func(LispFunc::new_operator(sub_symbol, Rc::clone(&env))));
-    env.borrow_mut().set("*", LispType::Func(LispFunc::new_operator(mul_symbol, Rc::clone(&env))));
-    env.borrow_mut().set("/", LispType::Func(LispFunc::new_operator(div_symbol, Rc::clone(&env))));
-    env.borrow_mut().set("=", LispType::Func(LispFunc::new_operator(eq_symbol, Rc::clone(&env))));
+    decl_operator!("+", add_symbol, env);
+    decl_operator!("-", sub_symbol, env);
+    decl_operator!("*", mul_symbol, env);
+    decl_operator!("/", div_symbol, env);
+    decl_operator!("=", eq_symbol, env);
 }
 
 fn add_symbol(a_in: LispType, b_in: LispType) -> LispResult<LispType> {
@@ -57,12 +63,14 @@ fn mul_symbol(a_in: LispType, b_in: LispType) -> LispResult<LispType> {
     let a = if let LispType::Int(i) = a_in {
         i
     } else {
+        a_in.print();
         return Err(String::from("Attempted to multiply value that is not numeric"));
     };
 
     let b = if let LispType::Int(i) = b_in {
         i
     } else {
+        b_in.print();
         return Err(String::from("Attempted to multiply value that is not numeric"));
     };
 

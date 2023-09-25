@@ -201,6 +201,114 @@ impl LispType {
 
                         }
 
+                        "if" => {
+                            
+                            if eval_vec.len() != 3 && eval_vec.len() != 4 {
+                                return Err(String::from("Expected 2 or 3 arguments to \"if\" declaration"));
+                            }
+
+                            let eval = eval_vec.get(1).unwrap().evaluate(Rc::clone(&env))?;
+                            let result = match eval {
+                                LispType::Nil => false,
+                                LispType::Bool(false) => false,
+                                _ => true,
+                            };
+
+                            if result {
+                                return eval_vec.get(2).unwrap().evaluate(Rc::clone(&env));
+                            } else {
+                                if eval_vec.len() == 4 {
+                                    return eval_vec.get(3).unwrap().evaluate(Rc::clone(&env));
+                                } else {
+                                    return Ok(LispType::Nil);
+                                }
+                            }
+
+                        }
+
+                        "and" | "&&" => {
+
+                            if eval_vec.len() != 3 {
+                                return Err(String::from("Expected 2 arguments to \"and\" declaration"));
+                            }
+
+                            let a = if let LispType::Bool(val) = eval_vec.get(1).unwrap().evaluate(Rc::clone(&env))? {
+                                val
+                            } else {
+                                return Err(String::from("First argument to \"and\" declaration is not boolean"));
+                            };
+
+                            let b = if let LispType::Bool(val) = eval_vec.get(2).unwrap().evaluate(Rc::clone(&env))? {
+                                val
+                            } else {
+                                return Err(String::from("Second argument to \"and\" declaration is not boolean"));
+                            };
+
+                            Ok(LispType::Bool(a && b))
+                        
+                        }
+
+                        "or" | "||" => {
+
+                            if eval_vec.len() != 3 {
+                                return Err(String::from("Expected 2 arguments to \"or\" declaration"));
+                            }
+
+                            let a = if let LispType::Bool(val) = eval_vec.get(1).unwrap().evaluate(Rc::clone(&env))? {
+                                val
+                            } else {
+                                return Err(String::from("First argument to \"or\" declaration is not boolean"));
+                            };
+
+                            let b = if let LispType::Bool(val) = eval_vec.get(2).unwrap().evaluate(Rc::clone(&env))? {
+                                val
+                            } else {
+                                return Err(String::from("Second argument to \"or\" declaration is not boolean"));
+                            };
+
+                            Ok(LispType::Bool(a || b))
+                        
+                        }
+
+                        "xor" | "^" => {
+
+                            if eval_vec.len() != 3 {
+                                return Err(String::from("Expected 2 arguments to \"xor\" declaration"));
+                            }
+
+                            let a = if let LispType::Bool(val) = eval_vec.get(1).unwrap().evaluate(Rc::clone(&env))? {
+                                val
+                            } else {
+                                return Err(String::from("First argument to \"xor\" declaration is not boolean"));
+                            };
+
+                            let b = if let LispType::Bool(val) = eval_vec.get(2).unwrap().evaluate(Rc::clone(&env))? {
+                                val
+                            } else {
+                                return Err(String::from("Second argument to \"xor\" declaration is not boolean"));
+                            };
+
+                            Ok(LispType::Bool(a ^ b))
+                        
+                        }
+
+
+                        "not" | "!" => {
+
+                            if eval_vec.len() != 2 {
+                                return Err(String::from("Expected 1 argument to \"not\" declaration"));
+                            }
+
+                            let a = if let LispType::Bool(val) = eval_vec.get(1).unwrap().evaluate(Rc::clone(&env))? {
+                                val
+                            } else {
+                                return Err(String::from("First argument to \"or\" declaration is not boolean"));
+                            };
+
+                            Ok(LispType::Bool(!a))
+                        
+                        }
+
                         _ => {
                             
                             let value = env.borrow_mut().get(symbol.as_str())?;
@@ -228,10 +336,18 @@ impl LispType {
             LispType::Symbol(s) => return if let Some(found) = env.borrow_mut().find(s.as_str()) {
                 Ok(found)
             } else {
-                Ok(LispType::Symbol(s.clone()))
+                match s.as_str() {
+                    "nil" => return Ok(LispType::Nil),
+                    "true" => return Ok(LispType::Bool(true)),
+                    "false" => return Ok(LispType::Bool(false)),
+                    _ => Ok(LispType::Symbol(s.clone())),
+                }
             },
-            LispType::String(s) => return Ok(LispType::String(s.clone())),
-            LispType::Int(i) => return Ok(LispType::Int(*i)),
+
+            t @ LispType::String(_) => return Ok(t.clone()),
+            t @ LispType::Bool(_) => return Ok(t.clone()),
+            t @ LispType::Int(_) => return Ok(t.clone()),
+            t @ LispType::Nil => return Ok(t.clone()),
 
             _ => Err(String::from("Unhandled evaluation value")),
 
