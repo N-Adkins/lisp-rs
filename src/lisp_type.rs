@@ -7,7 +7,7 @@ use crate::env::Env;
 use crate::result::LispResult;
 use crate::func::LispFunc;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum LispType {
     Func(LispFunc),
     List(Vec<LispType>),

@@ -5,7 +5,7 @@ use crate::env::Env;
 use crate::lisp_type::LispType;
 use crate::result::LispResult;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct LispFunc {
     pub body: Box<LispType>, // Expected to be a list that can be evaluated
     pub args: Vec<LispType>, // Expected to be symbols

@@ -43,3 +43,10 @@ impl Env {
     }
 
 }
+
+impl std::fmt::Debug for Env {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Env")
+            .finish()
+    } 
+}
