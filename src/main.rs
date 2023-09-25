@@ -53,8 +53,11 @@ fn main() {
         
         print!("{} ", "Parsed form:".green().bold());
         form.println();
-
-        print!("{} \n{:#?}\n", "Parsed tree: ".green().bold(), form);
+        
+        #[cfg(debug_assertions)]
+        {
+            print!("{} \n{:#?}\n", "Parsed tree: ".green().bold(), form);
+        }
 
         let eval = match form.evaluate(Rc::clone(&global_env)) {
             Ok(v) => v,
@@ -63,8 +66,11 @@ fn main() {
 
         print!("{} ", "Evaluation:".green().bold());
         eval.println();
-
-        print!("{} \n{:#?}\n", "Evaluated tree: ".green().bold(), eval);
+    
+        #[cfg(debug_assertions)]
+        {
+            print!("{} \n{:#?}\n", "Evaluated tree: ".green().bold(), eval);
+        }
 
     }
 
