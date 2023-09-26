@@ -116,7 +116,7 @@ impl LispType {
                             }
 
                             let eval = eval_vec.get(1).unwrap().evaluate(Rc::clone(&env))?;
-                            eval.print();
+                            eval.println();
                             
                             Ok(LispType::Nil)
                                                         
@@ -202,7 +202,6 @@ impl LispType {
                         }
 
                         "if" => {
-                            
                             if eval_vec.len() != 3 && eval_vec.len() != 4 {
                                 return Err(String::from("Expected 2 or 3 arguments to \"if\" declaration"));
                             }

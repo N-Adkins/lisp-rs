@@ -17,6 +17,9 @@ impl Reader {
         let regex = Regex::new(r#"[\s,]*(~@|[\[\]{}()'`~^@]|"(?:\\.|[^\\"])*"?|;.*|[^\s\[\]{}('"`,;)]*)"#).unwrap();
         let mut tokens: Vec<String> = Vec::new();
         
+        tokens.push(String::from("("));
+        tokens.push(String::from("do"));
+
         for (_, [raw_token]) in regex.captures_iter(input.as_str()).map(|c| c.extract()) {
             
             if raw_token.trim().is_empty() {
@@ -30,6 +33,8 @@ impl Reader {
             tokens.push(String::from(raw_token));
 
         }
+
+        tokens.push(String::from(")"));
 
         Self {
             tokens,
