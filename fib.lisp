@@ -4,4 +4,4 @@
              (+ (fibonacci (- a 2)) 
                 (fibonacci (- a 1))))))
 
-(prn (fibonacci 25))
+(prn (fibonacci 10))

@@ -12,6 +12,7 @@ pub enum LispType {
     Func(LispFunc),
     List(Vec<LispType>),
     Int(i32),
+    Float(f32),
     Symbol(String),
     String(String),
     Bool(bool),
@@ -346,6 +347,7 @@ impl LispType {
             t @ LispType::String(_) => return Ok(t.clone()),
             t @ LispType::Bool(_) => return Ok(t.clone()),
             t @ LispType::Int(_) => return Ok(t.clone()),
+            t @ LispType::Float(_) => return Ok(t.clone()),
             t @ LispType::Nil => return Ok(t.clone()),
 
             _ => Err(String::from("Unhandled evaluation value")),
@@ -368,6 +370,7 @@ impl LispType {
                 print!(")");
             },
             LispType::Int(i) => print!("{}", i),
+            LispType::Float(f) => print!("{}", f),
             LispType::Symbol(s) => print!("{}", s),
             LispType::String(s) => print!("\"{}\"", s),
             LispType::Bool(b) => match *b {

@@ -2,7 +2,6 @@
 
 use crate::{lisp_type::LispType, result::LispResult};
 
-use std::num::ParseIntError;
 use regex::Regex;
 
 pub struct Reader {
@@ -103,11 +102,19 @@ impl Reader {
         let token = self.next()?;
 
         let first_char = token.chars().nth(0).unwrap();
+        
         if first_char.is_numeric() || first_char == '-' {
-            let num_result: Result<i32, ParseIntError> = token.parse();
-            match num_result {
-                Ok(i) => return Ok(LispType::Int(i)),
-                Err(_) => {},
+
+            if token.contains('.') { // float
+                match token.parse::<f32>() {
+                    Ok(f) => return Ok(LispType::Float(f)),
+                    Err(_) => {}
+                }
+            } else {
+                match token.parse::<i32>() {
+                    Ok(i) => return Ok(LispType::Int(i)),
+                    Err(_) => {},
+                }
             }
         }
         
